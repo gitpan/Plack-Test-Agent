@@ -1,4 +1,6 @@
 package Plack::Test::Agent;
+# git description: 1.20111011-17-ge352a6a
+$Plack::Test::Agent::VERSION = '1.3';
 # ABSTRACT: OO interface for testing low-level Plack/PSGI apps
 
 use strict;
@@ -33,18 +35,22 @@ sub start_server
 {
     my ($self, $server_class) = @_;
 
-    my $ua     = $self->ua ? $self->ua : $self->ua( $self->get_mech );
+    my $app  = $self->app;
+    my $host = $self->host;
+
     my $server = Test::TCP->new(
         code => sub
         {
             my $port = shift;
-            $self->port( $port );
-            Plack::Loader->auto( port => $port, host => $self->host )
-                         ->run( $self->app );
+            my %args = ( host => $host, port => $port );
+            return $server_class
+                ? Plack::Loader->load( $server_class, %args )->run( $app )
+                : Plack::Loader->auto( %args )->run( $app );
         },
     );
 
     $self->port( $server->port );
+    $self->ua( $self->get_mech ) unless $self->ua;
     $self->server( $server );
 }
 
@@ -60,11 +66,10 @@ sub execute_request
     return $res;
 }
 
-sub get
-{
-    my ($self, $uri) = @_;
-    my $req          = GET $self->normalize_uri($uri);
-    return $self->execute_request( $req );
+sub get {
+    my ( $self, $uri, @args ) = @_;
+    my $req                   = GET $self->normalize_uri($uri), @args;
+    return $self->execute_request($req);
 }
 
 sub post
@@ -134,7 +139,7 @@ package
 
 1;
 
-
+__END__
 
 =pod
 
@@ -144,7 +149,7 @@ Plack::Test::Agent - OO interface for testing low-level Plack/PSGI apps
 
 =head1 VERSION
 
-version 1.20111011
+version 1.3
 
 =head2 SYNOPSIS
 
@@ -172,6 +177,8 @@ over HTTP through a L<Plack::Handler> compatible backend.
 B<NOTE:> This is an experimental module and its interface may change.
 
 =head2 CONSTRUCTION
+
+=head3 C<new>
 
 The C<new> constructor creates an instance of C<Plack::Test::Agent>. This
 constructor takes one mandatory named argument and several optional arguments.
@@ -231,23 +238,74 @@ This method takes an L<HTTP::Request>, performs it against the bound app, and
 returns an L<HTTP::Response>. This allows you to craft your own requests
 directly.
 
+=head3 C<get_mech>
+
+Used internally to create a default UserAgent, if none is provided to the
+constructor.  Returns a Test::WWW::Mechanize::Bound object.
+
+=head3 C<normalize_uri>
+
+Used internally to ensure that all requests use the correct scheme, host and
+port.  The scheme and host default to C<http> and C<localhost> respectively,
+while the port is determined by L<Test::TCP>.
+
+=head3 C<start_server>
+
+Starts a test server via L<Test::TCP>.  If a C<server> arg has been provided to
+the constructor, it will use this class to load a server.  Defaults to letting
+Plack::Loader decide which server class to use.
+
 =head2 CREDITS
 
 Thanks to Zbigniew E<0x141>ukasiak and Tatsuhiko Miyagawa for suggestions.
 
-=head1 AUTHOR
+=head1 AUTHORS
+
+=over 4
+
+=item *
 
 chromatic <chromatic@wgz.org>
 
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Ran Eilam <ran.eilam@gmail.com>
+
+=item *
+
+Olaf Alders <olaf@wundercounter.com>
+
+=back
+
+=head1 CONTRIBUTORS
+
+=for stopwords Dave Rolsky Olaf Alders Ran Eilam
+
+=over 4
+
+=item *
+
+Dave Rolsky <drolsky@maxmind.com>
+
+=item *
+
+Olaf Alders <oalders@maxmind.com>
+
+=item *
+
+Ran Eilam <reilam@maxmind.com>
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by chromatic.
+This software is copyright (c) 2011 - 2015 by MaxMind, Inc..
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
