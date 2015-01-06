@@ -1,6 +1,6 @@
 package Plack::Test::Agent;
-# git description: 1.20111011-17-ge352a6a
-$Plack::Test::Agent::VERSION = '1.3';
+# git description: v1.3-1-g41fa5a5
+$Plack::Test::Agent::VERSION = '1.4';
 # ABSTRACT: OO interface for testing low-level Plack/PSGI apps
 
 use strict;
@@ -149,7 +149,7 @@ Plack::Test::Agent - OO interface for testing low-level Plack/PSGI apps
 
 =head1 VERSION
 
-version 1.3
+version 1.4
 
 =head2 SYNOPSIS
 
@@ -303,7 +303,7 @@ Ran Eilam <reilam@maxmind.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 - 2015 by MaxMind, Inc..
+This software is copyright (c) 2011 - 2015 by chromatic.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
